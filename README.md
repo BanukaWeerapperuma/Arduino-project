@@ -1,5 +1,13 @@
 # Smart Home Security System  
-![GitHub Logo](https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png)
+
+<p align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/8/87/Arduino_Logo.svg" width="70" alt="Arduino Logo">
+  <img src="https://firebase.google.com/downloads/brand-guidelines/PNG/logo-logomark.png" width="50" alt="Firebase Logo">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/3/32/OpenCV_Logo_with_text_svg_version.svg" width="90" alt="OpenCV Logo">
+  <img src="https://www.python.org/static/community_logos/python-logo.png" width="100" alt="Python Logo">
+</p>  
+
+![GitHub Logo](https://github.com/BanukaWeerapperuma/Arduino-project/blob/main/circuit_diagram.png)
 
 ## Table of Contents
 1. [Introduction](#introduction)  
