@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Security Dashboard</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <!-- Styles -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+            color: #4CAF50;
+        }
+
+        .sensor-data, .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .sensor-item, .control-item {
+            flex: 1 1 45%;
+            margin-bottom: 20px;
+        }
+
+        .sensor-item p, .control-item p {
+            font-size: 1.2em;
+            margin: 5px 0;
+        }
+
+        .dropdown, .button {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            margin-top: 10px;
+            box-sizing: border-box;
+        }
+
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button.off {
+            background-color: #f44336;
+        }
+
+        .button:hover {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 600px) {
+            .sensor-item, .control-item {
+                flex: 1 1 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Home Security Dashboard</h1>
+
+        <!-- Sensor Data Section -->
+        <div class="section">
+            <h2>Sensor Data</h2>
+            <div class="sensor-data">
+                <div class="sensor-item">
+                    <p><strong>Temperature:</strong> <span id="temperature">--</span> &deg;C</p>
+                </div>
+                <div class="sensor-item">
+                    <p><strong>Humidity:</strong> <span id="humidity">--</span> %</p>
+                </div>
+                <div class="sensor-item">
+                    <p><strong>Door:</strong> <span id="door">--</span></p>
+                </div>
+                <div class="sensor-item">
+                    <p><strong>Window:</strong> <span id="window">--</span></p>
+                </div>
+                <div class="sensor-item">
+                    <p><strong>LPG Gas:</strong> <span id="gas">--</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="section">
+            <h2>Controls</h2>
+            <div class="controls">
+                <!-- FromHour Control -->
+                <div class="control-item">
+                    <label for="fromHour"><strong>From Hour:</strong></label>
+                    <select id="fromHour" class="dropdown">
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                <!-- ToHour Control -->
+                <div class="control-item">
+                    <label for="toHour"><strong>To Hour:</strong></label>
+                    <select id="toHour" class="dropdown">
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                <!-- LED Control -->
+                <div class="control-item" style="flex: 1 1 100%;">
+                    <button id="ledButton" class="button">Toggle LED</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfxJ6k9gLALYAe0a_a07U9dfumUP9mLcY",
+            databaseURL: "https://fir-iot-116cf-default-rtdb.firebaseio.com/",
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // DOM Elements
+        const temperatureEl = document.getElementById('temperature');
+        const humidityEl = document.getElementById('humidity');
+        const doorEl = document.getElementById('door');
+        const windowEl = document.getElementById('window');
+        const gasEl = document.getElementById('gas');
+
+        const fromHourSelect = document.getElementById('fromHour');
+        const toHourSelect = document.getElementById('toHour');
+        const ledButton = document.getElementById('ledButton');
+
+        // Populate Hour Dropdowns
+        for (let i = 0; i < 25; i++) {
+            const optionFrom = document.createElement('option');
+            optionFrom.value = i;
+            optionFrom.text = `${i}:00`;
+            fromHourSelect.appendChild(optionFrom);
+
+            const optionTo = document.createElement('option');
+            optionTo.value = i;
+            optionTo.text = `${i}:00`;
+            toHourSelect.appendChild(optionTo);
+        }
+
+        // Function to update Dropdowns based on Firebase
+        function updateDropdowns(fromHour, toHour) {
+            fromHourSelect.value = fromHour;
+            toHourSelect.value = toHour;
+        }
+
+        // Listen for Sensor Data Changes
+        const sensorsRef = database.ref('sensors');
+        sensorsRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                temperatureEl.textContent = data.temperature !== undefined ? data.temperature.toFixed(1) : '--';
+                humidityEl.textContent = data.humidity !== undefined ? data.humidity.toFixed(1) : '--';
+                doorEl.textContent = data.door ? 'Open' : 'Closed';
+                windowEl.textContent = data.window ? 'Open' : 'Closed';
+                gasEl.textContent = data.lpg ? 'Leak Detected' : 'Normal';
+            }
+        });
+
+        // Listen for Time Settings Changes
+        const timeRef = database.ref('time');
+        timeRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const fromHour = data.FromHour !== undefined ? data.FromHour : 18;
+                const toHour = data.ToHour !== undefined ? data.ToHour : 6;
+                updateDropdowns(fromHour, toHour);
+            }
+        });
+
+        // Listen for LED State Changes to Update Button Appearance
+        const ledRef = database.ref('controls/led');
+        ledRef.on('value', (snapshot) => {
+            const ledState = snapshot.val();
+            if (ledState !== null) {
+                ledButton.textContent = ledState ? 'Turn LED Off' : 'Turn LED On';
+                ledButton.classList.toggle('off', ledState);
+            }
+        });
+
+        // Handle FromHour Change
+        fromHourSelect.addEventListener('change', () => {
+            const selectedFromHour = parseInt(fromHourSelect.value);
+            database.ref('time/FromHour').set(selectedFromHour)
+                .catch((error) => {
+                    console.error('Error updating FromHour:', error);
+                });
+        });
+
+        // Handle ToHour Change
+        toHourSelect.addEventListener('change', () => {
+            const selectedToHour = parseInt(toHourSelect.value);
+            database.ref('time/ToHour').set(selectedToHour)
+                .catch((error) => {
+                    console.error('Error updating ToHour:', error);
+                });
+        });
+
+        // Handle LED Button Click
+        ledButton.addEventListener('click', () => {
+            // Toggle LED state
+            ledRef.once('value').then((snapshot) => {
+                const currentState = snapshot.val();
+                const newState = !currentState;
+                ledRef.set(newState)
+                    .catch((error) => {
+                        console.error('Error toggling LED:', error);
+                    });
+            });
+        });
+
+        // Initialize Dropdowns and LED State on Load
+        window.addEventListener('load', () => {
+            // Ensure dropdowns have default values if Firebase hasn't set them yet
+            timeRef.once('value').then((snapshot) => {
+                const data = snapshot.val();
+                const fromHour = data && data.FromHour !== undefined ? data.FromHour : 18;
+                const toHour = data && data.ToHour !== undefined ? data.ToHour : 6;
+                updateDropdowns(fromHour, toHour);
+            });
+
+            // Ensure LED button has correct initial state
+            ledRef.once('value').then((snapshot) => {
+                const ledState = snapshot.val();
+                ledButton.textContent = ledState ? 'Turn LED Off' : 'Turn LED On';
+                ledButton.classList.toggle('off', ledState);
+            });
+        });
+    </script>
+</body>
+</html>
